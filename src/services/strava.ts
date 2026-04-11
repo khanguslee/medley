@@ -50,7 +50,7 @@ export async function exchangeCodeForToken(
 }
 
 async function refreshAccessToken(
-  refreshToken: string
+  oldToken: StravaToken
 ): Promise<StravaToken> {
   const res = await fetch("https://www.strava.com/oauth/token", {
     method: "POST",
@@ -58,12 +58,13 @@ async function refreshAccessToken(
     body: JSON.stringify({
       client_id: CLIENT_ID,
       client_secret: CLIENT_SECRET,
-      refresh_token: refreshToken,
+      refresh_token: oldToken.refresh_token,
       grant_type: "refresh_token",
     }),
   });
   if (!res.ok) throw new Error("Token refresh failed");
-  const token: StravaToken = await res.json();
+  const refreshed = await res.json();
+  const token: StravaToken = { ...oldToken, ...refreshed, athlete: refreshed.athlete ?? oldToken.athlete };
   saveToken(token);
   return token;
 }
@@ -94,7 +95,7 @@ export async function getValidToken(): Promise<StravaToken | null> {
   if (!token) return null;
   if (!isTokenExpired(token)) return token;
   try {
-    return await refreshAccessToken(token.refresh_token);
+    return await refreshAccessToken(token);
   } catch {
     clearToken();
     return null;
