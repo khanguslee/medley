@@ -34,6 +34,12 @@ pnpm dev
 
 Open [http://localhost:5173](http://localhost:5173), click **Connect with Strava**, and authorize the app to see your activities.
 
+## Testing
+
+```sh
+pnpm test
+```
+
 ## Build
 
 ```sh
