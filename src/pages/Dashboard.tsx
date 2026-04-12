@@ -2,7 +2,7 @@ import { useState } from 'react'
 import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer } from 'recharts'
 import { useActivity } from '../context/ActivityContext'
 import { getAuthUrl } from '../services/strava'
-import { getStartOfPeriod, type TimePeriod } from '../utils/dates'
+import { getStartOfPeriod, formatPeriodRange, type TimePeriod } from '../utils/dates'
 import { aggregateHoursBySport } from '../utils/activities'
 
 const PERIODS: { label: string; value: TimePeriod }[] = [
@@ -38,6 +38,7 @@ export default function Dashboard() {
 
   const after = getStartOfPeriod(period)
   const chartData = aggregateHoursBySport(activities, after)
+  const rangeLabel = formatPeriodRange(period)
 
   return (
     <div className="page dashboard">
@@ -54,6 +55,7 @@ export default function Dashboard() {
           </button>
         ))}
       </div>
+      {rangeLabel && <p className="period-range">{rangeLabel}</p>}
 
       {chartData.length === 0 ? (
         <p className="no-activities">No activities for this period.</p>
