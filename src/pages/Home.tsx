@@ -35,7 +35,7 @@ export default function Home() {
   return (
     <div className="page">
       <header className="header">
-        <h1>Hi, {token.athlete.firstname}</h1>
+        <h1>Hi{token.athlete ? `, ${token.athlete.firstname}` : ''}!</h1>
         <button onClick={disconnect} className="disconnect-btn">
           Disconnect
         </button>

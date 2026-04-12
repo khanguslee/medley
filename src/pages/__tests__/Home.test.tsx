@@ -77,7 +77,17 @@ describe('Home', () => {
     })
 
     renderHome()
-    expect(screen.getByText('Hi, Alice')).toBeInTheDocument()
+    expect(screen.getByText('Hi, Alice!')).toBeInTheDocument()
+  })
+
+  it('shows generic greeting when athlete name is unavailable', () => {
+    vi.mocked(useActivity).mockReturnValue({
+      token: { ...mockToken, athlete: undefined }, activities: [], loading: false, error: null,
+      disconnect: vi.fn(), reload: vi.fn(),
+    })
+
+    renderHome()
+    expect(screen.getByText('Hi!')).toBeInTheDocument()
   })
 
   it('renders activity list', () => {

@@ -37,7 +37,7 @@ function Consumer() {
   if (!token) return <div>unauthenticated</div>
   return (
     <div>
-      <div>athlete: {token.athlete.firstname}</div>
+      <div>athlete: {token.athlete?.firstname ?? 'unknown'}</div>
       <div>count: {activities.length}</div>
     </div>
   )

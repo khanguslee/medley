@@ -2,7 +2,7 @@ export interface StravaToken {
   access_token: string;
   refresh_token: string;
   expires_at: number;
-  athlete: { firstname: string; lastname: string };
+  athlete?: { firstname: string; lastname: string };
 }
 
 export interface StravaActivity {
