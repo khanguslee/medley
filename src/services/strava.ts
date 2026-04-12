@@ -118,3 +118,18 @@ export async function fetchActivities(
   if (!res.ok) throw new Error("Failed to fetch activities");
   return res.json();
 }
+
+export async function fetchAllActivities(
+  accessToken: string,
+  perPage = 100
+): Promise<StravaActivity[]> {
+  const all: StravaActivity[] = [];
+  let page = 1;
+  while (true) {
+    const batch = await fetchActivities(accessToken, page, perPage);
+    all.push(...batch);
+    if (batch.length < perPage) break;
+    page++;
+  }
+  return all;
+}
