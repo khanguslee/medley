@@ -101,6 +101,19 @@ describe('Home', () => {
     expect(screen.getByText('Run')).toBeInTheDocument()
   })
 
+  it('links each activity to Strava', () => {
+    vi.mocked(useActivity).mockReturnValue({
+      token: mockToken, activities: mockActivities, loading: false, error: null,
+      disconnect: vi.fn(), reload: vi.fn(),
+    })
+
+    renderHome()
+    const link = screen.getByRole('link', { name: 'View on Strava' })
+    expect(link).toHaveAttribute('href', 'https://www.strava.com/activities/1')
+    expect(link).toHaveAttribute('target', '_blank')
+    expect(link.getAttribute('rel')).toMatch(/noopener/)
+  })
+
   it('shows empty message when no activities', () => {
     vi.mocked(useActivity).mockReturnValue({
       token: mockToken, activities: [], loading: false, error: null,
