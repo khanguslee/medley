@@ -1,12 +1,5 @@
-import { useEffect, useState } from "react";
-import {
-  getAuthUrl,
-  getValidToken,
-  clearToken,
-  fetchActivities,
-  type StravaToken,
-  type StravaActivity,
-} from "../services/strava";
+import { getAuthUrl } from "../services/strava";
+import { useActivity } from "../context/ActivityContext";
 
 function formatDuration(seconds: number): string {
   const h = Math.floor(seconds / 3600);
@@ -17,37 +10,7 @@ function formatDuration(seconds: number): string {
 }
 
 export default function Home() {
-  const [token, setToken] = useState<StravaToken | null>(null);
-  const [activities, setActivities] = useState<StravaActivity[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
-
-  useEffect(() => {
-    loadData();
-  }, []);
-
-  async function loadData() {
-    setLoading(true);
-    setError(null);
-    try {
-      const validToken = await getValidToken();
-      setToken(validToken);
-      if (validToken) {
-        const data = await fetchActivities(validToken.access_token);
-        setActivities(data);
-      }
-    } catch (err) {
-      setError(err instanceof Error ? err.message : "Something went wrong");
-    } finally {
-      setLoading(false);
-    }
-  }
-
-  function handleDisconnect() {
-    clearToken();
-    setToken(null);
-    setActivities([]);
-  }
+  const { token, activities, loading, error, disconnect, reload } = useActivity();
 
   if (loading) {
     return (
@@ -72,8 +35,8 @@ export default function Home() {
   return (
     <div className="page">
       <header className="header">
-        <h1>Hi, {token.athlete.firstname}</h1>
-        <button onClick={handleDisconnect} className="disconnect-btn">
+        <h1>Hi{token.athlete ? `, ${token.athlete.firstname}` : ''}!</h1>
+        <button onClick={disconnect} className="disconnect-btn">
           Disconnect
         </button>
       </header>
@@ -81,7 +44,7 @@ export default function Home() {
       {error && (
         <div className="error">
           <p>{error}</p>
-          <button onClick={loadData}>Retry</button>
+          <button onClick={reload}>Retry</button>
         </div>
       )}
 
