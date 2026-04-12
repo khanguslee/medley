@@ -54,13 +54,23 @@ export default function Home() {
         <ul className="activity-list">
           {activities.map((a) => (
             <li key={a.id} className="activity-card">
-              <strong className="activity-name">{a.name}</strong>
-              <div className="activity-meta">
-                <span>{a.sport_type}</span>
-                <span>{(a.distance / 1000).toFixed(2)} km</span>
-                <span>{formatDuration(a.moving_time)}</span>
-                <span>{new Date(a.start_date).toLocaleDateString()}</span>
+              <div className="activity-card-body">
+                <strong className="activity-name">{a.name}</strong>
+                <div className="activity-meta">
+                  <span>{a.sport_type}</span>
+                  <span>{(a.distance / 1000).toFixed(2)} km</span>
+                  <span>{formatDuration(a.moving_time)}</span>
+                  <span>{new Date(a.start_date).toLocaleDateString()}</span>
+                </div>
               </div>
+              <a
+                href={`https://www.strava.com/activities/${a.id}`}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="strava-link"
+              >
+                View on Strava
+              </a>
             </li>
           ))}
         </ul>
