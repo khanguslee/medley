@@ -2,12 +2,21 @@
   "name": "@medley/server",
   "private": true,
   "version": "0.0.0",
+  "type": "module",
   "scripts": {
-    "dev": "echo \"@medley/server: not implemented yet (KHL-30)\"",
-    "build": "echo \"@medley/server: no build yet\"",
+    "dev": "tsx watch src/index.ts",
+    "start": "tsx src/index.ts",
+    "build": "tsc --noEmit",
     "test": "echo \"@medley/server: no tests yet\""
   },
   "dependencies": {
-    "@medley/shared": "workspace:*"
+    "@hono/node-server": "^1.14.4",
+    "@medley/shared": "workspace:*",
+    "hono": "^4.7.7"
+  },
+  "devDependencies": {
+    "@types/node": "^22.15.2",
+    "tsx": "^4.19.3",
+    "typescript": "^5.8.3"
   }
 }
