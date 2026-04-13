@@ -195,6 +195,37 @@
   font-weight: 500;
 }
 
+.custom-range {
+  display: flex;
+  gap: 1rem;
+  flex-wrap: wrap;
+  align-items: center;
+  margin-bottom: 0.75rem;
+}
+
+.custom-range label {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 0.875rem;
+  color: var(--text);
+}
+
+.custom-range input[type='date'] {
+  padding: 0.375rem 0.625rem;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  background: transparent;
+  color: var(--text);
+  font-size: 0.875rem;
+  cursor: pointer;
+}
+
+.custom-range input[type='date']:focus {
+  outline: none;
+  border-color: var(--accent);
+}
+
 .chart-container {
   margin-bottom: 1.5rem;
 }

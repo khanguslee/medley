@@ -77,4 +77,43 @@ describe('aggregateHoursBySport', () => {
     const after = new Date('2025-01-01T00:00:00Z')
     expect(aggregateHoursBySport(activities, after)).toEqual([])
   })
+
+  it('filters activities by before date', () => {
+    const activities = [
+      makeActivity(1, 'Run', 3600, '2025-01-01T10:00:00Z'),
+      makeActivity(2, 'Run', 3600, '2025-03-01T10:00:00Z'),
+    ]
+    const before = new Date('2025-02-01T00:00:00Z')
+    const result = aggregateHoursBySport(activities, null, before)
+    expect(result).toHaveLength(1)
+    expect(result[0].hours).toBe(1)
+  })
+
+  it('filters activities within a closed date range [after, before]', () => {
+    const activities = [
+      makeActivity(1, 'Run', 3600, '2025-01-01T10:00:00Z'),
+      makeActivity(2, 'Ride', 7200, '2025-03-15T10:00:00Z'),
+      makeActivity(3, 'Swim', 1800, '2025-06-01T10:00:00Z'),
+    ]
+    const after = new Date('2025-02-01T00:00:00Z')
+    const before = new Date('2025-05-01T00:00:00Z')
+    const result = aggregateHoursBySport(activities, after, before)
+    expect(result).toHaveLength(1)
+    expect(result[0].sport).toBe('Ride')
+  })
+
+  it('includes activities exactly on the after boundary', () => {
+    const boundary = new Date('2025-03-01T00:00:00Z')
+    const activities = [makeActivity(1, 'Run', 3600, '2025-03-01T00:00:00Z')]
+    const result = aggregateHoursBySport(activities, boundary)
+    expect(result).toHaveLength(1)
+  })
+
+  it('includes activities exactly on the before boundary', () => {
+    const before = new Date('2025-03-01T00:00:00Z')
+    const activities = [makeActivity(1, 'Run', 3600, '2025-03-01T00:00:00Z')]
+    // Exactly on boundary — filter is strict >, so boundary date is included
+    const result = aggregateHoursBySport(activities, null, before)
+    expect(result).toHaveLength(1)
+  })
 })

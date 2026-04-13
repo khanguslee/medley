@@ -94,6 +94,7 @@ describe('Dashboard', () => {
     expect(screen.getByRole('button', { name: 'This month' })).toBeInTheDocument()
     expect(screen.getByRole('button', { name: 'This year' })).toBeInTheDocument()
     expect(screen.getByRole('button', { name: 'All time' })).toBeInTheDocument()
+    expect(screen.getByRole('button', { name: 'Custom' })).toBeInTheDocument()
   })
 
   it('defaults to "This month" as active period', () => {
@@ -182,5 +183,51 @@ describe('Dashboard', () => {
     renderDashboard()
     fireEvent.click(screen.getByRole('button', { name: 'All time' }))
     expect(screen.queryByText('April 2026')).not.toBeInTheDocument()
+  })
+
+  it('shows date inputs when "Custom" is selected', () => {
+    vi.mocked(useActivity).mockReturnValue({
+      token: mockToken, activities: [], loading: false, error: null,
+      disconnect: vi.fn(), reload: vi.fn(),
+    })
+
+    renderDashboard()
+    expect(screen.queryAllByRole('textbox')).toHaveLength(0) // no date inputs initially
+
+    fireEvent.click(screen.getByRole('button', { name: 'Custom' }))
+
+    const dateInputs = screen.getAllByDisplayValue(/\d{4}-\d{2}-\d{2}/)
+    expect(dateInputs).toHaveLength(2)
+  })
+
+  it('hides date inputs when switching away from "Custom"', () => {
+    vi.mocked(useActivity).mockReturnValue({
+      token: mockToken, activities: [], loading: false, error: null,
+      disconnect: vi.fn(), reload: vi.fn(),
+    })
+
+    renderDashboard()
+    fireEvent.click(screen.getByRole('button', { name: 'Custom' }))
+    expect(screen.getAllByDisplayValue(/\d{4}-\d{2}-\d{2}/)).toHaveLength(2)
+
+    fireEvent.click(screen.getByRole('button', { name: 'This month' }))
+    expect(screen.queryAllByDisplayValue(/\d{4}-\d{2}-\d{2}/)).toHaveLength(0)
+  })
+
+  it('shows formatted custom range label when custom dates are set', () => {
+    vi.mocked(useActivity).mockReturnValue({
+      token: mockToken, activities: [], loading: false, error: null,
+      disconnect: vi.fn(), reload: vi.fn(),
+    })
+
+    renderDashboard()
+    fireEvent.click(screen.getByRole('button', { name: 'Custom' }))
+
+    const [startInput, endInput] = screen.getAllByDisplayValue(/\d{4}-\d{2}-\d{2}/)
+    fireEvent.change(startInput, { target: { value: '2026-03-01' } })
+    fireEvent.change(endInput, { target: { value: '2026-03-31' } })
+
+    const rangeLabel = screen.getByText(/Mar.*2026.*Mar.*2026/)
+    expect(rangeLabel).toBeInTheDocument()
   })
 })
