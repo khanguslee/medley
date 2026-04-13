@@ -1,5 +1,5 @@
 import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest'
-import { getStartOfPeriod, formatPeriodRange } from '../dates'
+import { getStartOfPeriod, formatPeriodRange, toDateInputValue } from '../dates'
 
 describe('getStartOfPeriod', () => {
   beforeEach(() => {
@@ -55,6 +55,10 @@ describe('getStartOfPeriod', () => {
     // Sunday → go back 6 days to Monday Apr 6
     expect(result.getDate()).toBe(6)
   })
+
+  it('returns null for "custom"', () => {
+    expect(getStartOfPeriod('custom')).toBeNull()
+  })
 })
 
 describe('formatPeriodRange', () => {
@@ -95,5 +99,45 @@ describe('formatPeriodRange', () => {
     // Wednesday Dec 31, 2025 → Mon Dec 29, 2025 – Sun Jan 4, 2026
     vi.setSystemTime(new Date('2025-12-31T12:00:00Z'))
     expect(formatPeriodRange('week')).toBe('Dec 29, 2025 – Jan 4, 2026')
+  })
+
+  it('returns empty string for "custom" with no customRange', () => {
+    expect(formatPeriodRange('custom')).toBe('')
+  })
+
+  it('returns formatted range for "custom" with customRange', () => {
+    const start = new Date('2026-03-01T00:00:00')
+    const end = new Date('2026-03-31T00:00:00')
+    const result = formatPeriodRange('custom', new Date(), { start, end })
+    expect(result).toContain('Mar 1, 2026')
+    expect(result).toContain('Mar 31, 2026')
+  })
+
+  it('returns empty string for "custom" when start is Invalid Date', () => {
+    const start = new Date('not-a-date')
+    const end = new Date('2026-03-31T00:00:00')
+    expect(formatPeriodRange('custom', new Date(), { start, end })).toBe('')
+  })
+
+  it('returns empty string for "custom" when end is Invalid Date', () => {
+    const start = new Date('2026-03-01T00:00:00')
+    const end = new Date('not-a-date')
+    expect(formatPeriodRange('custom', new Date(), { start, end })).toBe('')
+  })
+
+  it('returns empty string for "custom" when both dates are Invalid Date', () => {
+    const start = new Date('not-a-date')
+    const end = new Date('not-a-date')
+    expect(formatPeriodRange('custom', new Date(), { start, end })).toBe('')
+  })
+})
+
+describe('toDateInputValue', () => {
+  it('formats a date as yyyy-mm-dd', () => {
+    expect(toDateInputValue(new Date('2026-04-08T14:30:00'))).toBe('2026-04-08')
+  })
+
+  it('pads single-digit month and day', () => {
+    expect(toDateInputValue(new Date('2026-01-05T00:00:00'))).toBe('2026-01-05')
   })
 })

@@ -2,7 +2,7 @@ import { useState } from 'react'
 import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer } from 'recharts'
 import { useActivity } from '../context/ActivityContext'
 import { getAuthUrl } from '../services/strava'
-import { getStartOfPeriod, formatPeriodRange, type TimePeriod } from '../utils/dates'
+import { getStartOfPeriod, formatPeriodRange, toDateInputValue, type TimePeriod, type CustomRange } from '../utils/dates'
 import { aggregateHoursBySport } from '../utils/activities'
 
 const PERIODS: { label: string; value: TimePeriod }[] = [
@@ -10,11 +10,24 @@ const PERIODS: { label: string; value: TimePeriod }[] = [
   { label: 'This month', value: 'month' },
   { label: 'This year', value: 'year' },
   { label: 'All time', value: 'all' },
+  { label: 'Custom', value: 'custom' },
 ]
+
+function defaultCustomStart(): string {
+  const d = new Date()
+  d.setDate(d.getDate() - 7)
+  return toDateInputValue(d)
+}
+
+function defaultCustomEnd(): string {
+  return toDateInputValue(new Date())
+}
 
 export default function Dashboard() {
   const { token, activities, loading } = useActivity()
   const [period, setPeriod] = useState<TimePeriod>('month')
+  const [customStart, setCustomStart] = useState<string>(defaultCustomStart)
+  const [customEnd, setCustomEnd] = useState<string>(defaultCustomEnd)
 
   if (loading) {
     return (
@@ -36,9 +49,24 @@ export default function Dashboard() {
     )
   }
 
-  const after = getStartOfPeriod(period)
-  const chartData = aggregateHoursBySport(activities, after)
-  const rangeLabel = formatPeriodRange(period)
+  let after: Date | null
+  let before: Date | null = null
+  let customRange: CustomRange | undefined
+
+  if (period === 'custom') {
+    const parsedStart = customStart ? new Date(`${customStart}T00:00:00`) : null
+    const parsedEnd = customEnd ? new Date(`${customEnd}T23:59:59`) : null
+    after = parsedStart && !isNaN(parsedStart.getTime()) ? parsedStart : null
+    before = parsedEnd && !isNaN(parsedEnd.getTime()) ? parsedEnd : null
+    if (after && before) {
+      customRange = { start: after, end: before }
+    }
+  } else {
+    after = getStartOfPeriod(period)
+  }
+
+  const chartData = aggregateHoursBySport(activities, after, before)
+  const rangeLabel = formatPeriodRange(period, new Date(), customRange)
 
   return (
     <div className="page dashboard">
@@ -55,6 +83,30 @@ export default function Dashboard() {
           </button>
         ))}
       </div>
+
+      {period === 'custom' && (
+        <div className="custom-range">
+          <label>
+            From
+            <input
+              type="date"
+              value={customStart}
+              max={customEnd}
+              onChange={e => setCustomStart(e.target.value)}
+            />
+          </label>
+          <label>
+            To
+            <input
+              type="date"
+              value={customEnd}
+              min={customStart}
+              onChange={e => setCustomEnd(e.target.value)}
+            />
+          </label>
+        </div>
+      )}
+
       {rangeLabel && <p className="period-range">{rangeLabel}</p>}
 
       {chartData.length === 0 ? (

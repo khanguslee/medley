@@ -7,11 +7,15 @@ export interface SportHours {
 
 export function aggregateHoursBySport(
   activities: StravaActivity[],
-  after: Date | null
+  after: Date | null,
+  before?: Date | null
 ): SportHours[] {
-  const filtered = after
-    ? activities.filter(a => new Date(a.start_date) >= after)
-    : activities
+  const filtered = activities.filter(a => {
+    const date = new Date(a.start_date)
+    if (after && date < after) return false
+    if (before && date > before) return false
+    return true
+  })
 
   const totals = new Map<string, number>()
   for (const activity of filtered) {

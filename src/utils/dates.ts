@@ -1,4 +1,4 @@
-export type TimePeriod = 'week' | 'month' | 'year' | 'all'
+export type TimePeriod = 'week' | 'month' | 'year' | 'all' | 'custom'
 
 function getMondayOf(now: Date): Date {
   const day = now.getDay() // 0=Sun, 1=Mon, ...
@@ -10,7 +10,7 @@ function getMondayOf(now: Date): Date {
 }
 
 export function getStartOfPeriod(period: TimePeriod): Date | null {
-  if (period === 'all') return null
+  if (period === 'all' || period === 'custom') return null
 
   const now = new Date()
 
@@ -26,8 +26,20 @@ export function getStartOfPeriod(period: TimePeriod): Date | null {
   return new Date(now.getFullYear(), 0, 1)
 }
 
-export function formatPeriodRange(period: TimePeriod, now = new Date()): string {
+export interface CustomRange {
+  start: Date
+  end: Date
+}
+
+export function formatPeriodRange(period: TimePeriod, now = new Date(), customRange?: CustomRange): string {
   if (period === 'all') return ''
+
+  if (period === 'custom') {
+    if (!customRange) return ''
+    if (isNaN(customRange.start.getTime()) || isNaN(customRange.end.getTime())) return ''
+    const fmt = new Intl.DateTimeFormat('en', { month: 'short', day: 'numeric', year: 'numeric' })
+    return `${fmt.format(customRange.start)} – ${fmt.format(customRange.end)}`
+  }
 
   if (period === 'month') {
     return new Intl.DateTimeFormat('en', { month: 'long', year: 'numeric' }).format(now)
@@ -61,4 +73,11 @@ export function formatPeriodRange(period: TimePeriod, now = new Date()): string 
     const fullFmt = new Intl.DateTimeFormat('en', { month: 'short', day: 'numeric', year: 'numeric' })
     return `${fullFmt.format(monday)} – ${fullFmt.format(sunday)}`
   }
+}
+
+export function toDateInputValue(date: Date): string {
+  const y = date.getFullYear()
+  const m = String(date.getMonth() + 1).padStart(2, '0')
+  const d = String(date.getDate()).padStart(2, '0')
+  return `${y}-${m}-${d}`
 }
