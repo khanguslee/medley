@@ -1,0 +1,13 @@
+{
+  "name": "@medley/server",
+  "private": true,
+  "version": "0.0.0",
+  "scripts": {
+    "dev": "echo \"@medley/server: not implemented yet (KHL-30)\"",
+    "build": "echo \"@medley/server: no build yet\"",
+    "test": "echo \"@medley/server: no tests yet\""
+  },
+  "dependencies": {
+    "@medley/shared": "workspace:*"
+  }
+}
