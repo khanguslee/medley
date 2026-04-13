@@ -3,7 +3,7 @@
   "private": true,
   "version": "0.0.0",
   "scripts": {
-    "dev": "pnpm --filter @medley/client dev",
+    "dev": "concurrently \"pnpm --filter @medley/server dev\" \"pnpm --filter @medley/client dev\"",
     "build": "pnpm -r build",
     "lint": "pnpm -r lint",
     "test": "pnpm -r test"
