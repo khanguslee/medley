@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest'
 import { aggregateHoursBySport } from '../activities'
-import type { StravaActivity } from '../../services/strava'
+import type { StravaActivity } from '../../services/api'
 
 function makeActivity(
   id: number,

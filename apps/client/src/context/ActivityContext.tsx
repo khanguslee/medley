@@ -1,25 +1,29 @@
 import { createContext, useContext, useEffect, useState } from 'react'
 import {
-  getValidToken,
-  clearToken,
-  fetchAllActivities,
-  type StravaToken,
+  deleteStravaToken,
+  fetchActivities,
+  fetchAuthUrl,
+  fetchMe,
   type StravaActivity,
-} from '../services/strava'
+  type StravaAthlete,
+} from '../services/api'
 
-interface ActivityContextValue {
-  token: StravaToken | null
+export interface ActivityContextValue {
+  athlete: StravaAthlete | null
+  isAuthenticated: boolean
+  authUrl: string | null
   activities: StravaActivity[]
   loading: boolean
   error: string | null
-  disconnect: () => void
-  reload: () => void
+  disconnect: () => Promise<void>
+  reload: () => Promise<void>
 }
 
 const ActivityContext = createContext<ActivityContextValue | null>(null)
 
 export function ActivityProvider({ children }: { children: React.ReactNode }) {
-  const [token, setToken] = useState<StravaToken | null>(null)
+  const [athlete, setAthlete] = useState<StravaAthlete | null>(null)
+  const [authUrl, setAuthUrl] = useState<string | null>(null)
   const [activities, setActivities] = useState<StravaActivity[]>([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
@@ -32,10 +36,11 @@ export function ActivityProvider({ children }: { children: React.ReactNode }) {
     setLoading(true)
     setError(null)
     try {
-      const validToken = await getValidToken()
-      setToken(validToken)
-      if (validToken && (force || activities.length === 0)) {
-        const data = await fetchAllActivities(validToken.access_token)
+      const [url, me] = await Promise.all([fetchAuthUrl(), fetchMe()])
+      setAuthUrl(url)
+      setAthlete(me)
+      if (me && (force || activities.length === 0)) {
+        const data = await fetchActivities()
         setActivities(data)
       }
     } catch (err) {
@@ -45,18 +50,29 @@ export function ActivityProvider({ children }: { children: React.ReactNode }) {
     }
   }
 
-  function disconnect() {
-    clearToken()
-    setToken(null)
+  async function disconnect() {
+    await deleteStravaToken()
+    setAthlete(null)
     setActivities([])
   }
 
-  function reload() {
-    void loadData(true)
+  function reload(): Promise<void> {
+    return loadData(true)
   }
 
   return (
-    <ActivityContext.Provider value={{ token, activities, loading, error, disconnect, reload }}>
+    <ActivityContext.Provider
+      value={{
+        athlete,
+        isAuthenticated: athlete !== null,
+        authUrl,
+        activities,
+        loading,
+        error,
+        disconnect,
+        reload,
+      }}
+    >
       {children}
     </ActivityContext.Provider>
   )

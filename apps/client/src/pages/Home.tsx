@@ -1,4 +1,3 @@
-import { getAuthUrl } from "../services/strava";
 import { useActivity } from "../context/ActivityContext";
 
 function formatDuration(seconds: number): string {
@@ -10,7 +9,7 @@ function formatDuration(seconds: number): string {
 }
 
 export default function Home() {
-  const { token, activities, loading, error, disconnect, reload } = useActivity();
+  const { athlete, isAuthenticated, authUrl, activities, loading, error, disconnect, reload } = useActivity();
 
   if (loading) {
     return (
@@ -20,12 +19,12 @@ export default function Home() {
     );
   }
 
-  if (!token) {
+  if (!isAuthenticated) {
     return (
       <div className="page">
         <h1>Medley</h1>
         <p>Connect your Strava account to see your recent activities.</p>
-        <a href={getAuthUrl()} className="connect-btn">
+        <a href={authUrl ?? '#'} className="connect-btn">
           Connect with Strava
         </a>
       </div>
@@ -35,7 +34,7 @@ export default function Home() {
   return (
     <div className="page">
       <header className="header">
-        <h1>Hi{token.athlete ? `, ${token.athlete.firstname}` : ''}!</h1>
+        <h1>Hi{athlete ? `, ${athlete.firstname}` : ''}!</h1>
         <button onClick={disconnect} className="disconnect-btn">
           Disconnect
         </button>

@@ -1,10 +1,12 @@
 import { useEffect, useRef, useState } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
-import { exchangeCodeForToken } from "../services/strava";
+import { exchangeCode } from "../services/api";
+import { useActivity } from "../context/ActivityContext";
 
 export default function Callback() {
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();
+  const { reload } = useActivity();
   const [error, setError] = useState<string | null>(null);
   const hasExchanged = useRef(false);
 
@@ -18,10 +20,11 @@ export default function Callback() {
       return;
     }
 
-    exchangeCodeForToken(code)
+    exchangeCode(code)
+      .then(() => reload())
       .then(() => navigate("/", { replace: true }))
-      .catch((err) => setError(err.message));
-  }, [searchParams, navigate]);
+      .catch((err) => setError(err instanceof Error ? err.message : String(err)));
+  }, [searchParams, navigate, reload]);
 
   if (error) {
     return (

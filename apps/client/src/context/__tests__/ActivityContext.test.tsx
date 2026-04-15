@@ -1,21 +1,21 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest'
 import { render, screen, act, waitFor } from '@testing-library/react'
 import { ActivityProvider, useActivity } from '../ActivityContext'
-import type { StravaToken, StravaActivity } from '../../services/strava'
+import type { StravaActivity, StravaAthlete } from '../../services/api'
 
-vi.mock('../../services/strava', () => ({
-  getValidToken: vi.fn(),
-  clearToken: vi.fn(),
-  fetchAllActivities: vi.fn(),
+vi.mock('../../services/api', () => ({
+  fetchAuthUrl: vi.fn(),
+  fetchMe: vi.fn(),
+  fetchActivities: vi.fn(),
+  deleteStravaToken: vi.fn(),
 }))
 
-import { getValidToken, clearToken, fetchAllActivities } from '../../services/strava'
+import { fetchAuthUrl, fetchMe, fetchActivities, deleteStravaToken } from '../../services/api'
 
-const mockToken: StravaToken = {
-  access_token: 'test-token',
-  refresh_token: 'refresh',
-  expires_at: 9999999999,
-  athlete: { firstname: 'Test', lastname: 'User' },
+const mockAthlete: StravaAthlete = {
+  id: 42,
+  firstname: 'Test',
+  lastname: 'User',
 }
 
 const mockActivities: StravaActivity[] = [
@@ -31,24 +31,24 @@ const mockActivities: StravaActivity[] = [
 ]
 
 function Consumer() {
-  const { token, activities, loading, error } = useActivity()
+  const { athlete, isAuthenticated, activities, loading, error } = useActivity()
   if (loading) return <div>loading</div>
   if (error) return <div>error: {error}</div>
-  if (!token) return <div>unauthenticated</div>
+  if (!isAuthenticated) return <div>unauthenticated</div>
   return (
     <div>
-      <div>athlete: {token.athlete?.firstname ?? 'unknown'}</div>
+      <div>athlete: {athlete?.firstname ?? 'unknown'}</div>
       <div>count: {activities.length}</div>
     </div>
   )
 }
 
 function DisconnectConsumer() {
-  const { token, disconnect } = useActivity()
+  const { isAuthenticated, disconnect } = useActivity()
   return (
     <div>
-      <div>{token ? 'authenticated' : 'unauthenticated'}</div>
-      <button onClick={disconnect}>disconnect</button>
+      <div>{isAuthenticated ? 'authenticated' : 'unauthenticated'}</div>
+      <button onClick={() => { void disconnect() }}>disconnect</button>
     </div>
   )
 }
@@ -60,11 +60,12 @@ function renderWithProvider(ui: React.ReactNode) {
 describe('ActivityContext', () => {
   beforeEach(() => {
     vi.resetAllMocks()
+    vi.mocked(fetchAuthUrl).mockResolvedValue('https://strava.com/auth')
   })
 
   it('shows loading state while fetching', async () => {
-    vi.mocked(getValidToken).mockResolvedValue(mockToken)
-    vi.mocked(fetchAllActivities).mockResolvedValue(mockActivities)
+    vi.mocked(fetchMe).mockResolvedValue(mockAthlete)
+    vi.mocked(fetchActivities).mockResolvedValue(mockActivities)
 
     renderWithProvider(<Consumer />)
     expect(screen.getByText('loading')).toBeInTheDocument()
@@ -72,9 +73,9 @@ describe('ActivityContext', () => {
     await waitFor(() => expect(screen.queryByText('loading')).not.toBeInTheDocument())
   })
 
-  it('provides token and activities after successful fetch', async () => {
-    vi.mocked(getValidToken).mockResolvedValue(mockToken)
-    vi.mocked(fetchAllActivities).mockResolvedValue(mockActivities)
+  it('provides athlete and activities after successful fetch', async () => {
+    vi.mocked(fetchMe).mockResolvedValue(mockAthlete)
+    vi.mocked(fetchActivities).mockResolvedValue(mockActivities)
 
     renderWithProvider(<Consumer />)
 
@@ -84,20 +85,20 @@ describe('ActivityContext', () => {
     })
   })
 
-  it('shows unauthenticated state when no token', async () => {
-    vi.mocked(getValidToken).mockResolvedValue(null)
+  it('shows unauthenticated state when fetchMe returns null', async () => {
+    vi.mocked(fetchMe).mockResolvedValue(null)
 
     renderWithProvider(<Consumer />)
 
     await waitFor(() => {
       expect(screen.getByText('unauthenticated')).toBeInTheDocument()
     })
-    expect(fetchAllActivities).not.toHaveBeenCalled()
+    expect(fetchActivities).not.toHaveBeenCalled()
   })
 
-  it('shows error state when fetch throws', async () => {
-    vi.mocked(getValidToken).mockResolvedValue(mockToken)
-    vi.mocked(fetchAllActivities).mockRejectedValue(new Error('Network error'))
+  it('shows error state when fetchActivities throws', async () => {
+    vi.mocked(fetchMe).mockResolvedValue(mockAthlete)
+    vi.mocked(fetchActivities).mockRejectedValue(new Error('Network error'))
 
     renderWithProvider(<Consumer />)
 
@@ -106,9 +107,10 @@ describe('ActivityContext', () => {
     })
   })
 
-  it('disconnect clears the token', async () => {
-    vi.mocked(getValidToken).mockResolvedValue(mockToken)
-    vi.mocked(fetchAllActivities).mockResolvedValue(mockActivities)
+  it('disconnect calls deleteStravaToken and clears state', async () => {
+    vi.mocked(fetchMe).mockResolvedValue(mockAthlete)
+    vi.mocked(fetchActivities).mockResolvedValue(mockActivities)
+    vi.mocked(deleteStravaToken).mockResolvedValue(undefined)
 
     renderWithProvider(<DisconnectConsumer />)
 
@@ -120,7 +122,7 @@ describe('ActivityContext', () => {
       screen.getByText('disconnect').click()
     })
 
-    expect(clearToken).toHaveBeenCalled()
+    expect(deleteStravaToken).toHaveBeenCalled()
     expect(screen.getByText('unauthenticated')).toBeInTheDocument()
   })
 

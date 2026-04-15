@@ -1,4 +1,4 @@
-import type { StravaActivity } from '../services/strava'
+import type { StravaActivity } from '../services/api'
 
 export interface SportHours {
   sport: string
