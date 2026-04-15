@@ -1,10 +1,11 @@
 import { serve } from '@hono/node-server';
 import { Hono } from 'hono';
 import { db } from './db/client.js';
+import { HealthCheckSchema } from '@medley/shared';
 
 const app = new Hono();
 
-app.get('/api/health', (c) => c.json({ ok: true }));
+app.get('/api/health', (c) => c.json(HealthCheckSchema.parse({ ok: true })));
 
 const port = 3421;
 // Reference db here to ensure the module initialises (creates ~/.medley dir +
