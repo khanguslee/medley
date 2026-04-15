@@ -5,6 +5,7 @@
   "scripts": {
     "dev": "concurrently \"pnpm --filter @medley/server dev\" \"pnpm --filter @medley/client dev\"",
     "build": "pnpm -r build",
+    "typecheck": "pnpm -r typecheck",
     "lint": "pnpm -r lint",
     "test": "pnpm -r test"
   },
