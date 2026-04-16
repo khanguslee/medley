@@ -14,6 +14,7 @@ export interface StravaAthlete {
   lastname: string;
 }
 
+/** Internal helper — prepends nothing (Vite proxies /api), throws on non-2xx. */
 async function apiFetch(path: string, init?: RequestInit): Promise<Response> {
   const res = await fetch(path, init);
   if (!res.ok) {
@@ -23,12 +24,14 @@ async function apiFetch(path: string, init?: RequestInit): Promise<Response> {
   return res;
 }
 
+/** Fetch the Strava OAuth authorization URL from the server. */
 export async function fetchAuthUrl(): Promise<string> {
   const res = await apiFetch('/api/strava/auth-url');
   const { url } = (await res.json()) as { url: string };
   return url;
 }
 
+/** Exchange an OAuth authorization code for a token via the server. */
 export async function exchangeCode(code: string): Promise<void> {
   await apiFetch('/api/strava/callback', {
     method: 'POST',
@@ -37,16 +40,19 @@ export async function exchangeCode(code: string): Promise<void> {
   });
 }
 
+/** Fetch the authenticated athlete, or null if not connected. */
 export async function fetchMe(): Promise<StravaAthlete | null> {
   const res = await apiFetch('/api/strava/me');
   const { athlete } = (await res.json()) as { athlete: StravaAthlete | null };
   return athlete;
 }
 
+/** Delete the stored Strava token (disconnect). */
 export async function deleteStravaToken(): Promise<void> {
   await apiFetch('/api/strava/token', { method: 'DELETE' });
 }
 
+/** Fetch activities from the server, optionally filtered by ISO date range. */
 export async function fetchActivities(range?: { from?: string; to?: string }): Promise<StravaActivity[]> {
   const params = new URLSearchParams();
   if (range?.from) params.set('from', range.from);

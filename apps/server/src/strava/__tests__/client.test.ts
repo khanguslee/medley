@@ -20,8 +20,6 @@ const baseToken: StravaToken = {
   expires_at: 9999999999,
 };
 
-// ---- isTokenExpired --------------------------------------------------------
-
 describe('isTokenExpired', () => {
   it('returns false when token is in the future', () => {
     const token = { ...baseToken, expires_at: 9999999999 };
@@ -38,8 +36,6 @@ describe('isTokenExpired', () => {
     expect(isTokenExpired({ ...baseToken, expires_at: expiresAt }, expiresAt * 1000)).toBe(true);
   });
 });
-
-// ---- refreshAccessToken ----------------------------------------------------
 
 describe('refreshAccessToken', () => {
   it('sends the correct POST body', async () => {
@@ -121,8 +117,6 @@ describe('refreshAccessToken', () => {
     ).rejects.toBeInstanceOf(StravaApiError);
   });
 });
-
-// ---- fetchAllActivities ----------------------------------------------------
 
 const makeActivity = (id: number): StravaActivity => ({
   id,
