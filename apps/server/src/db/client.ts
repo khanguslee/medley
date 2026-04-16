@@ -3,6 +3,7 @@ import { drizzle } from 'drizzle-orm/better-sqlite3';
 import { mkdirSync } from 'node:fs';
 import os from 'node:os';
 import path from 'node:path';
+import * as schema from './schema.js';
 
 const dbPath =
   process.env.MEDLEY_DB_PATH ??
@@ -12,4 +13,4 @@ mkdirSync(path.dirname(dbPath), { recursive: true });
 
 const sqlite = new Database(dbPath);
 
-export const db = drizzle(sqlite);
+export const db = drizzle(sqlite, { schema });

@@ -2,12 +2,26 @@ import { describe, it, expect, vi } from 'vitest'
 import { render, screen } from '@testing-library/react'
 import { MemoryRouter } from 'react-router-dom'
 import Nav from '../Nav'
+import type { StravaAthlete, StravaActivity } from '../../services/api'
 
 vi.mock('../../context/ActivityContext', () => ({
   useActivity: vi.fn(),
 }))
 
 import { useActivity } from '../../context/ActivityContext'
+
+const mockAthlete: StravaAthlete = { id: 1, firstname: 'Test', lastname: 'User' }
+
+const baseContext = {
+  athlete: null as StravaAthlete | null,
+  isAuthenticated: false,
+  authUrl: 'https://strava.com/auth',
+  activities: [] as StravaActivity[],
+  loading: false,
+  error: null as string | null,
+  disconnect: vi.fn().mockResolvedValue(undefined),
+  reload: vi.fn().mockResolvedValue(undefined),
+}
 
 function renderNav(initialPath = '/') {
   return render(
@@ -19,14 +33,7 @@ function renderNav(initialPath = '/') {
 
 describe('Nav', () => {
   it('renders nothing when unauthenticated', () => {
-    vi.mocked(useActivity).mockReturnValue({
-      token: null,
-      activities: [],
-      loading: false,
-      error: null,
-      disconnect: vi.fn(),
-      reload: vi.fn(),
-    })
+    vi.mocked(useActivity).mockReturnValue({ ...baseContext })
 
     const { container } = renderNav()
     expect(container).toBeEmptyDOMElement()
@@ -34,12 +41,9 @@ describe('Nav', () => {
 
   it('renders Activities and Dashboard links when authenticated', () => {
     vi.mocked(useActivity).mockReturnValue({
-      token: { access_token: 'tok', refresh_token: 'ref', expires_at: 9999, athlete: { firstname: 'Test', lastname: 'User' } },
-      activities: [],
-      loading: false,
-      error: null,
-      disconnect: vi.fn(),
-      reload: vi.fn(),
+      ...baseContext,
+      athlete: mockAthlete,
+      isAuthenticated: true,
     })
 
     renderNav()
@@ -50,12 +54,9 @@ describe('Nav', () => {
 
   it('links point to correct routes', () => {
     vi.mocked(useActivity).mockReturnValue({
-      token: { access_token: 'tok', refresh_token: 'ref', expires_at: 9999, athlete: { firstname: 'Test', lastname: 'User' } },
-      activities: [],
-      loading: false,
-      error: null,
-      disconnect: vi.fn(),
-      reload: vi.fn(),
+      ...baseContext,
+      athlete: mockAthlete,
+      isAuthenticated: true,
     })
 
     renderNav()
@@ -66,12 +67,9 @@ describe('Nav', () => {
 
   it('applies active class to Activities link when on /', () => {
     vi.mocked(useActivity).mockReturnValue({
-      token: { access_token: 'tok', refresh_token: 'ref', expires_at: 9999, athlete: { firstname: 'Test', lastname: 'User' } },
-      activities: [],
-      loading: false,
-      error: null,
-      disconnect: vi.fn(),
-      reload: vi.fn(),
+      ...baseContext,
+      athlete: mockAthlete,
+      isAuthenticated: true,
     })
 
     renderNav('/')
@@ -82,12 +80,9 @@ describe('Nav', () => {
 
   it('applies active class to Dashboard link when on /dashboard', () => {
     vi.mocked(useActivity).mockReturnValue({
-      token: { access_token: 'tok', refresh_token: 'ref', expires_at: 9999, athlete: { firstname: 'Test', lastname: 'User' } },
-      activities: [],
-      loading: false,
-      error: null,
-      disconnect: vi.fn(),
-      reload: vi.fn(),
+      ...baseContext,
+      athlete: mockAthlete,
+      isAuthenticated: true,
     })
 
     renderNav('/dashboard')

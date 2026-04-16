@@ -2,8 +2,8 @@ import { NavLink } from 'react-router-dom'
 import { useActivity } from '../context/ActivityContext'
 
 export default function Nav() {
-  const { token } = useActivity()
-  if (!token) return null
+  const { isAuthenticated } = useActivity()
+  if (!isAuthenticated) return null
 
   return (
     <nav className="nav">

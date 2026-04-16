@@ -1,7 +1,6 @@
 import { useState } from 'react'
 import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer } from 'recharts'
 import { useActivity } from '../context/ActivityContext'
-import { getAuthUrl } from '../services/strava'
 import { getStartOfPeriod, formatPeriodRange, toDateInputValue, type TimePeriod, type CustomRange } from '../utils/dates'
 import { aggregateHoursBySport } from '../utils/activities'
 
@@ -24,7 +23,7 @@ function defaultCustomEnd(): string {
 }
 
 export default function Dashboard() {
-  const { token, activities, loading } = useActivity()
+  const { isAuthenticated, authUrl, activities, loading } = useActivity()
   const [period, setPeriod] = useState<TimePeriod>('month')
   const [customStart, setCustomStart] = useState<string>(defaultCustomStart)
   const [customEnd, setCustomEnd] = useState<string>(defaultCustomEnd)
@@ -37,12 +36,12 @@ export default function Dashboard() {
     )
   }
 
-  if (!token) {
+  if (!isAuthenticated) {
     return (
       <div className="page">
         <h1>Medley</h1>
         <p>Connect your Strava account to see your dashboard.</p>
-        <a href={getAuthUrl()} className="connect-btn">
+        <a href={authUrl ?? '#'} className="connect-btn">
           Connect with Strava
         </a>
       </div>
@@ -118,7 +117,7 @@ export default function Dashboard() {
               <BarChart data={chartData} margin={{ top: 16, right: 16, left: 0, bottom: 8 }}>
                 <XAxis dataKey="sport" tick={{ fontSize: 13 }} />
                 <YAxis unit="h" tick={{ fontSize: 13 }} />
-                <Tooltip formatter={(value: number) => [`${value}h`, 'Hours']} />
+                <Tooltip formatter={(value) => [`${value}h`, 'Hours']} />
                 <Bar dataKey="hours" fill="#aa3bff" radius={[4, 4, 0, 0]} />
               </BarChart>
             </ResponsiveContainer>

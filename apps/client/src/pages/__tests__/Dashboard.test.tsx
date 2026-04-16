@@ -1,9 +1,8 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest'
 import { render, screen, fireEvent } from '@testing-library/react'
-import userEvent from '@testing-library/user-event'
 import { MemoryRouter } from 'react-router-dom'
 import Dashboard from '../Dashboard'
-import type { StravaToken, StravaActivity } from '../../services/strava'
+import type { StravaActivity, StravaAthlete } from '../../services/api'
 
 // Mock recharts to avoid jsdom SVG/ResizeObserver issues
 vi.mock('recharts', () => ({
@@ -19,17 +18,12 @@ vi.mock('../../context/ActivityContext', () => ({
   useActivity: vi.fn(),
 }))
 
-vi.mock('../../services/strava', () => ({
-  getAuthUrl: vi.fn(() => 'https://strava.com/auth'),
-}))
-
 import { useActivity } from '../../context/ActivityContext'
 
-const mockToken: StravaToken = {
-  access_token: 'tok',
-  refresh_token: 'ref',
-  expires_at: 9999999999,
-  athlete: { firstname: 'Alice', lastname: 'Smith' },
+const mockAthlete: StravaAthlete = {
+  id: 1,
+  firstname: 'Alice',
+  lastname: 'Smith',
 }
 
 const mockActivities: StravaActivity[] = [
@@ -42,6 +36,17 @@ const mockActivities: StravaActivity[] = [
     distance: 20000, moving_time: 7200, start_date: new Date().toISOString(),
   },
 ]
+
+const baseContext = {
+  athlete: null as StravaAthlete | null,
+  isAuthenticated: false,
+  authUrl: 'https://strava.com/auth',
+  activities: [] as StravaActivity[],
+  loading: false,
+  error: null as string | null,
+  disconnect: vi.fn().mockResolvedValue(undefined),
+  reload: vi.fn().mockResolvedValue(undefined),
+}
 
 function renderDashboard() {
   return render(
@@ -64,20 +69,14 @@ describe('Dashboard', () => {
   })
 
   it('shows loading state', () => {
-    vi.mocked(useActivity).mockReturnValue({
-      token: null, activities: [], loading: true, error: null,
-      disconnect: vi.fn(), reload: vi.fn(),
-    })
+    vi.mocked(useActivity).mockReturnValue({ ...baseContext, loading: true })
 
     renderDashboard()
     expect(screen.getByText('Loading...')).toBeInTheDocument()
   })
 
   it('shows connect prompt when unauthenticated', () => {
-    vi.mocked(useActivity).mockReturnValue({
-      token: null, activities: [], loading: false, error: null,
-      disconnect: vi.fn(), reload: vi.fn(),
-    })
+    vi.mocked(useActivity).mockReturnValue({ ...baseContext })
 
     renderDashboard()
     expect(screen.getByRole('link', { name: 'Connect with Strava' })).toBeInTheDocument()
@@ -85,8 +84,9 @@ describe('Dashboard', () => {
 
   it('renders time period filter buttons', () => {
     vi.mocked(useActivity).mockReturnValue({
-      token: mockToken, activities: [], loading: false, error: null,
-      disconnect: vi.fn(), reload: vi.fn(),
+      ...baseContext,
+      athlete: mockAthlete,
+      isAuthenticated: true,
     })
 
     renderDashboard()
@@ -99,8 +99,9 @@ describe('Dashboard', () => {
 
   it('defaults to "This month" as active period', () => {
     vi.mocked(useActivity).mockReturnValue({
-      token: mockToken, activities: [], loading: false, error: null,
-      disconnect: vi.fn(), reload: vi.fn(),
+      ...baseContext,
+      athlete: mockAthlete,
+      isAuthenticated: true,
     })
 
     renderDashboard()
@@ -110,8 +111,9 @@ describe('Dashboard', () => {
 
   it('changes active period when filter button is clicked', () => {
     vi.mocked(useActivity).mockReturnValue({
-      token: mockToken, activities: [], loading: false, error: null,
-      disconnect: vi.fn(), reload: vi.fn(),
+      ...baseContext,
+      athlete: mockAthlete,
+      isAuthenticated: true,
     })
 
     renderDashboard()
@@ -123,8 +125,9 @@ describe('Dashboard', () => {
 
   it('shows "no activities" message when there are no matching activities', () => {
     vi.mocked(useActivity).mockReturnValue({
-      token: mockToken, activities: [], loading: false, error: null,
-      disconnect: vi.fn(), reload: vi.fn(),
+      ...baseContext,
+      athlete: mockAthlete,
+      isAuthenticated: true,
     })
 
     renderDashboard()
@@ -133,8 +136,10 @@ describe('Dashboard', () => {
 
   it('renders chart and summary list when there are activities', () => {
     vi.mocked(useActivity).mockReturnValue({
-      token: mockToken, activities: mockActivities, loading: false, error: null,
-      disconnect: vi.fn(), reload: vi.fn(),
+      ...baseContext,
+      athlete: mockAthlete,
+      isAuthenticated: true,
+      activities: mockActivities,
     })
 
     renderDashboard()
@@ -145,8 +150,9 @@ describe('Dashboard', () => {
 
   it('does not show chart when there are no matching activities', () => {
     vi.mocked(useActivity).mockReturnValue({
-      token: mockToken, activities: [], loading: false, error: null,
-      disconnect: vi.fn(), reload: vi.fn(),
+      ...baseContext,
+      athlete: mockAthlete,
+      isAuthenticated: true,
     })
 
     renderDashboard()
@@ -155,8 +161,9 @@ describe('Dashboard', () => {
 
   it('shows a date range label for the default "This month" period', () => {
     vi.mocked(useActivity).mockReturnValue({
-      token: mockToken, activities: [], loading: false, error: null,
-      disconnect: vi.fn(), reload: vi.fn(),
+      ...baseContext,
+      athlete: mockAthlete,
+      isAuthenticated: true,
     })
 
     renderDashboard()
@@ -165,8 +172,9 @@ describe('Dashboard', () => {
 
   it('shows "2026" as range label when "This year" is selected', () => {
     vi.mocked(useActivity).mockReturnValue({
-      token: mockToken, activities: [], loading: false, error: null,
-      disconnect: vi.fn(), reload: vi.fn(),
+      ...baseContext,
+      athlete: mockAthlete,
+      isAuthenticated: true,
     })
 
     renderDashboard()
@@ -176,8 +184,9 @@ describe('Dashboard', () => {
 
   it('hides the range label when "All time" is selected', () => {
     vi.mocked(useActivity).mockReturnValue({
-      token: mockToken, activities: [], loading: false, error: null,
-      disconnect: vi.fn(), reload: vi.fn(),
+      ...baseContext,
+      athlete: mockAthlete,
+      isAuthenticated: true,
     })
 
     renderDashboard()
@@ -187,12 +196,13 @@ describe('Dashboard', () => {
 
   it('shows date inputs when "Custom" is selected', () => {
     vi.mocked(useActivity).mockReturnValue({
-      token: mockToken, activities: [], loading: false, error: null,
-      disconnect: vi.fn(), reload: vi.fn(),
+      ...baseContext,
+      athlete: mockAthlete,
+      isAuthenticated: true,
     })
 
     renderDashboard()
-    expect(screen.queryAllByRole('textbox')).toHaveLength(0) // no date inputs initially
+    expect(screen.queryAllByRole('textbox')).toHaveLength(0)
 
     fireEvent.click(screen.getByRole('button', { name: 'Custom' }))
 
@@ -202,8 +212,9 @@ describe('Dashboard', () => {
 
   it('hides date inputs when switching away from "Custom"', () => {
     vi.mocked(useActivity).mockReturnValue({
-      token: mockToken, activities: [], loading: false, error: null,
-      disconnect: vi.fn(), reload: vi.fn(),
+      ...baseContext,
+      athlete: mockAthlete,
+      isAuthenticated: true,
     })
 
     renderDashboard()
@@ -216,8 +227,9 @@ describe('Dashboard', () => {
 
   it('shows formatted custom range label when custom dates are set', () => {
     vi.mocked(useActivity).mockReturnValue({
-      token: mockToken, activities: [], loading: false, error: null,
-      disconnect: vi.fn(), reload: vi.fn(),
+      ...baseContext,
+      athlete: mockAthlete,
+      isAuthenticated: true,
     })
 
     renderDashboard()
