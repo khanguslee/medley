@@ -13,6 +13,9 @@ export default function Nav() {
       <NavLink to="/dashboard" className={({ isActive }) => isActive ? 'nav-link active' : 'nav-link'}>
         Dashboard
       </NavLink>
+      <NavLink to="/overview" className={({ isActive }) => isActive ? 'nav-link active' : 'nav-link'}>
+        Overview
+      </NavLink>
     </nav>
   )
 }
