@@ -18,6 +18,8 @@ const baseContext = {
   authUrl: 'https://strava.com/auth',
   activities: [] as StravaActivity[],
   loading: false,
+  loadedCount: 0,
+  isInitialLoad: false,
   error: null as string | null,
   disconnect: vi.fn().mockResolvedValue(undefined),
   reload: vi.fn().mockResolvedValue(undefined),

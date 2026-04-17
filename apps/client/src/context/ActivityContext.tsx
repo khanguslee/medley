@@ -1,7 +1,7 @@
 import { createContext, useContext, useEffect, useState } from 'react'
 import {
   deleteStravaToken,
-  fetchActivities,
+  fetchActivitiesStream,
   fetchAuthUrl,
   fetchMe,
   type StravaActivity,
@@ -14,6 +14,8 @@ export interface ActivityContextValue {
   authUrl: string | null
   activities: StravaActivity[]
   loading: boolean
+  loadedCount: number
+  isInitialLoad: boolean
   error: string | null
   disconnect: () => Promise<void>
   reload: () => Promise<void>
@@ -26,6 +28,8 @@ export function ActivityProvider({ children }: { children: React.ReactNode }) {
   const [authUrl, setAuthUrl] = useState<string | null>(null)
   const [activities, setActivities] = useState<StravaActivity[]>([])
   const [loading, setLoading] = useState(true)
+  const [loadedCount, setLoadedCount] = useState(0)
+  const [isInitialLoad, setIsInitialLoad] = useState(true)
   const [error, setError] = useState<string | null>(null)
 
   useEffect(() => {
@@ -35,13 +39,31 @@ export function ActivityProvider({ children }: { children: React.ReactNode }) {
   async function loadData(force = false) {
     setLoading(true)
     setError(null)
+    setLoadedCount(0)
+    setIsInitialLoad(true)
     try {
       const [url, me] = await Promise.all([fetchAuthUrl(), fetchMe()])
       setAuthUrl(url)
       setAthlete(me)
       if (me && (force || activities.length === 0)) {
-        const data = await fetchActivities()
-        setActivities(data)
+        setActivities([])
+        await new Promise<void>((resolve, reject) => {
+          const accumulated: StravaActivity[] = []
+          fetchActivitiesStream({
+            onPage(pageActivities, loaded) {
+              accumulated.push(...pageActivities)
+              setActivities([...accumulated])
+              setLoadedCount(loaded)
+              setIsInitialLoad(false)
+            },
+            onDone() {
+              resolve()
+            },
+            onError(message) {
+              reject(new Error(message))
+            },
+          })
+        })
       }
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Something went wrong')
@@ -68,6 +90,8 @@ export function ActivityProvider({ children }: { children: React.ReactNode }) {
         authUrl,
         activities,
         loading,
+        loadedCount,
+        isInitialLoad,
         error,
         disconnect,
         reload,

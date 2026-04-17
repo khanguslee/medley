@@ -9,12 +9,12 @@ function formatDuration(seconds: number): string {
 }
 
 export default function Home() {
-  const { athlete, isAuthenticated, authUrl, activities, loading, error, disconnect, reload } = useActivity();
+  const { athlete, isAuthenticated, authUrl, activities, loading, loadedCount, error, disconnect, reload } = useActivity();
 
-  if (loading) {
+  if (loading && loadedCount === 0) {
     return (
       <div className="page">
-        <p className="loading">Loading...</p>
+        <p className="loading">Connecting to Strava…</p>
       </div>
     );
   }
@@ -40,6 +40,10 @@ export default function Home() {
         </button>
       </header>
 
+      {loading && loadedCount > 0 && (
+        <p className="loading">Loaded {loadedCount} activities…</p>
+      )}
+
       {error && (
         <div className="error">
           <p>{error}</p>
@@ -47,7 +51,7 @@ export default function Home() {
         </div>
       )}
 
-      {activities.length === 0 && !error ? (
+      {activities.length === 0 && !error && !loading ? (
         <p>No recent activities found.</p>
       ) : (
         <ul className="activity-list">

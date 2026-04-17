@@ -34,6 +34,8 @@ const baseContext = {
   authUrl: 'https://strava.com/auth',
   activities: [] as StravaActivity[],
   loading: false,
+  loadedCount: 0,
+  isInitialLoad: false,
   error: null as string | null,
   disconnect: vi.fn().mockResolvedValue(undefined),
   reload: vi.fn().mockResolvedValue(undefined),
@@ -52,11 +54,26 @@ describe('Home', () => {
     vi.resetAllMocks()
   })
 
-  it('shows loading state', () => {
-    vi.mocked(useActivity).mockReturnValue({ ...baseContext, loading: true })
+  it('shows "Connecting to Strava…" before first page arrives', () => {
+    vi.mocked(useActivity).mockReturnValue({ ...baseContext, loading: true, loadedCount: 0 })
 
     renderHome()
-    expect(screen.getByText('Loading...')).toBeInTheDocument()
+    expect(screen.getByText('Connecting to Strava…')).toBeInTheDocument()
+  })
+
+  it('shows inline progress message and partial activity list after first page', () => {
+    vi.mocked(useActivity).mockReturnValue({
+      ...baseContext,
+      athlete: mockAthlete,
+      isAuthenticated: true,
+      loading: true,
+      loadedCount: 47,
+      activities: mockActivities,
+    })
+
+    renderHome()
+    expect(screen.getByText('Loaded 47 activities…')).toBeInTheDocument()
+    expect(screen.getByText('Morning Run')).toBeInTheDocument()
   })
 
   it('shows connect prompt when unauthenticated', () => {
