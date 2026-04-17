@@ -9,7 +9,7 @@ export interface SportMetric {
   format: (total: number) => number
 }
 
-const round1 = (n: number) => Math.round(n * 10) / 10
+const roundToOneDecimal = (n: number) => Math.round(n * 10) / 10
 
 export const SPORT_METRICS: Record<string, SportMetric> = {
   moving_time: {
@@ -18,7 +18,7 @@ export const SPORT_METRICS: Record<string, SportMetric> = {
     shortLabel: 'Moving',
     unit: 'h',
     accessor: a => a.moving_time,
-    format: s => round1(s / 3600),
+    format: s => roundToOneDecimal(s / 3600),
   },
   elapsed_time: {
     id: 'elapsed_time',
@@ -26,7 +26,7 @@ export const SPORT_METRICS: Record<string, SportMetric> = {
     shortLabel: 'Elapsed',
     unit: 'h',
     accessor: a => a.elapsed_time,
-    format: s => round1(s / 3600),
+    format: s => roundToOneDecimal(s / 3600),
   },
 }
 
