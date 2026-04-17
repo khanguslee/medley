@@ -317,7 +317,7 @@
 }
 
 .overview {
-  max-width: 950px;
+  max-width: 1320px;
 }
 
 .overview-heading {
@@ -373,9 +373,9 @@
 */
 .heatmap-outer {
   display: grid;
-  grid-template-columns: 28px 1fr;
+  grid-template-columns: 24px 1fr;
   grid-template-rows: auto auto;
-  column-gap: 0.5rem;
+  column-gap: 0.25rem;
   row-gap: 0.25rem;
   min-width: auto;
 }
@@ -383,7 +383,7 @@
 .heatmap-month-labels {
   display: grid;
   grid-template-columns: repeat(var(--hm-weeks, 52), 1fr);
-  gap: 2px;
+  gap: 1px;
   font-size: 0.75rem;
   color: var(--text);
   font-weight: 500;
@@ -419,7 +419,7 @@
   display: grid;
   grid-template-columns: repeat(var(--hm-weeks, 52), 1fr);
   grid-template-rows: repeat(7, 1fr);
-  gap: 2px;
+  gap: 1px;
   grid-auto-flow: column;
   aspect-ratio: var(--hm-weeks, 52) / 7;
 }
