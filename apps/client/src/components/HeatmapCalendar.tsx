@@ -102,13 +102,15 @@ export default function HeatmapCalendar({ grid }: HeatmapCalendarProps) {
           ))}
         </div>
 
-        {/* Row 2, col 1: day labels (Mon/Wed/Fri) */}
+        {/* Row 2, col 1: day labels — 7-row grid matching heatmap rows */}
         <div className="heatmap-day-labels">
-          {[1, 3, 5].map((dayIndex) => (
-            <div key={`day-${dayIndex}`} className="heatmap-day-label">
-              {DAYS_OF_WEEK[dayIndex]}
-            </div>
-          ))}
+          <div /> {/* Sun */}
+          <div className="heatmap-day-label">Mon</div>
+          <div /> {/* Tue */}
+          <div className="heatmap-day-label">Wed</div>
+          <div /> {/* Thu */}
+          <div className="heatmap-day-label">Fri</div>
+          <div /> {/* Sat */}
         </div>
 
         {/* Row 2, col 2: heatmap grid */}
