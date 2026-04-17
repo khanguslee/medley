@@ -377,6 +377,7 @@
   grid-template-columns: repeat(52, 1fr);
   gap: 3px;
   flex: 1;
+  min-width: 600px;
 }
 
 .heatmap-month-label {
@@ -397,6 +398,7 @@
   flex-direction: column;
   gap: 3px;
   width: 28px;
+  flex-shrink: 0;
 }
 
 .heatmap-day-label {
