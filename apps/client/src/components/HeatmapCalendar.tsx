@@ -88,11 +88,13 @@ export default function HeatmapCalendar({ grid }: HeatmapCalendarProps) {
       {/* Month labels row */}
       <div className="heatmap-month-row">
         <div className="heatmap-day-labels-spacer" />
-        {Array.from({ length: 52 }).map((_, weekIndex) => (
-          <div key={`month-${weekIndex}`} className="heatmap-month-label">
-            {getMonthLabel(grid, weekIndex)}
-          </div>
-        ))}
+        <div className="heatmap-month-labels">
+          {Array.from({ length: 52 }).map((_, weekIndex) => (
+            <div key={`month-${weekIndex}`} className="heatmap-month-label">
+              {getMonthLabel(grid, weekIndex)}
+            </div>
+          ))}
+        </div>
       </div>
 
       {/* Main grid */}
