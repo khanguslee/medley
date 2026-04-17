@@ -62,6 +62,9 @@ interface TooltipState {
 export default function HeatmapCalendar({ grid }: HeatmapCalendarProps) {
   const [tooltip, setTooltip] = useState<TooltipState | null>(null);
 
+  // grid.length is always a multiple of 7 (complete weeks)
+  const numWeeks = grid.length / 7;
+
   // Compute p95 for color normalization
   const p95 = useMemo(() => computeP95(grid), [grid]);
 
@@ -84,7 +87,8 @@ export default function HeatmapCalendar({ grid }: HeatmapCalendarProps) {
   };
 
   return (
-    <div className="heatmap-container">
+    // --hm-weeks drives repeat() in both the month-labels and heatmap-grid CSS
+    <div className="heatmap-container" style={{ '--hm-weeks': numWeeks } as React.CSSProperties}>
       {/*
         Single outer grid: 2 columns (day-labels col + data col).
         Both the month-labels row and the heatmap-grid row live in column 2,
@@ -95,7 +99,7 @@ export default function HeatmapCalendar({ grid }: HeatmapCalendarProps) {
         <div />
         {/* Row 1, col 2: month labels */}
         <div className="heatmap-month-labels">
-          {Array.from({ length: 52 }).map((_, weekIndex) => (
+          {Array.from({ length: numWeeks }).map((_, weekIndex) => (
             <div key={`month-${weekIndex}`} className="heatmap-month-label">
               {getMonthLabel(grid, weekIndex)}
             </div>
