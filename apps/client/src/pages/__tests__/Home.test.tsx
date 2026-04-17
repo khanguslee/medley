@@ -24,6 +24,7 @@ const mockActivities: StravaActivity[] = [
     sport_type: 'Run',
     distance: 5000,
     moving_time: 1800,
+    elapsed_time: 2100,
     start_date: '2026-04-01T08:00:00Z',
   },
 ]
