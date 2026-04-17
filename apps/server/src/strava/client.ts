@@ -97,6 +97,8 @@ export interface FetchActivitiesOptions {
   after?: number; // unix seconds
   before?: number; // unix seconds
   perPage?: number;
+  onPage?: (activities: StravaActivity[], page: number) => void;
+  onProgress?: (loaded: number, page: number) => void;
 }
 
 async function fetchActivitiesPage(
@@ -130,12 +132,14 @@ export async function fetchAllActivities(
   accessToken: string,
   opts: FetchActivitiesOptions = {},
 ): Promise<StravaActivity[]> {
-  const { after, before, perPage = 100 } = opts;
+  const { after, before, perPage = 100, onPage, onProgress } = opts;
   const all: StravaActivity[] = [];
   let page = 1;
   while (true) {
     const batch = await fetchActivitiesPage(fetchFn, accessToken, page, perPage, after, before);
     all.push(...batch);
+    onPage?.(batch, page);
+    onProgress?.(all.length, page);
     if (batch.length < perPage) break;
     page++;
   }

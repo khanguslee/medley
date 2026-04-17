@@ -23,15 +23,15 @@ function defaultCustomEnd(): string {
 }
 
 export default function Dashboard() {
-  const { isAuthenticated, authUrl, activities, loading } = useActivity()
+  const { isAuthenticated, authUrl, activities, loading, loadedCount } = useActivity()
   const [period, setPeriod] = useState<TimePeriod>('month')
   const [customStart, setCustomStart] = useState<string>(defaultCustomStart)
   const [customEnd, setCustomEnd] = useState<string>(defaultCustomEnd)
 
-  if (loading) {
+  if (loading && loadedCount === 0) {
     return (
       <div className="page">
-        <p className="loading">Loading...</p>
+        <p className="loading">Connecting to Strava…</p>
       </div>
     )
   }
@@ -69,7 +69,16 @@ export default function Dashboard() {
 
   return (
     <div className="page dashboard">
-      <h2>Hours by sport</h2>
+      <div className="dashboard-heading">
+        <h2>Hours by sport</h2>
+        {loading && activities.length > 0 && (
+          <span className="sync-badge">Syncing…</span>
+        )}
+      </div>
+
+      {loading && loadedCount > 0 && activities.length === 0 && (
+        <p className="loading">Loaded {loadedCount} activities…</p>
+      )}
 
       <div className="time-filters">
         {PERIODS.map(({ label, value }) => (

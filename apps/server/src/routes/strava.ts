@@ -80,6 +80,62 @@ stravaRoutes.delete('/api/strava/token', (c) => {
   }
 });
 
+stravaRoutes.get('/api/activities/stream', async (c) => {
+  let row = getStravaToken();
+  if (!row) return c.json({ error: 'Not authenticated' }, 401);
+
+  const config = getConfig();
+
+  if (isTokenExpired({ access_token: row.access_token, refresh_token: row.refresh_token, expires_at: row.expires_at })) {
+    const refreshed = await refreshAccessToken(fetch, config, {
+      access_token: row.access_token,
+      refresh_token: row.refresh_token,
+      expires_at: row.expires_at,
+    });
+    saveStravaToken({
+      access_token: refreshed.access_token,
+      refresh_token: refreshed.refresh_token,
+      expires_at: refreshed.expires_at,
+      athlete_id: row.athlete_id,
+      athlete_firstname: row.athlete_firstname,
+      athlete_lastname: row.athlete_lastname,
+    });
+    row = getStravaToken()!;
+  }
+
+  const accessToken = row.access_token;
+  const encoder = new TextEncoder();
+
+  const stream = new ReadableStream({
+    async start(controller) {
+      let loaded = 0;
+      try {
+        await fetchAllActivities(fetch, accessToken, {
+          onPage(activities, page) {
+            loaded += activities.length;
+            const data = JSON.stringify({ page, activities, loaded });
+            controller.enqueue(encoder.encode(`data: ${data}\n\n`));
+          },
+        });
+        controller.enqueue(encoder.encode(`data: ${JSON.stringify({ done: true, total: loaded })}\n\n`));
+      } catch (err) {
+        const message = err instanceof Error ? err.message : 'Internal error';
+        controller.enqueue(encoder.encode(`data: ${JSON.stringify({ error: message })}\n\n`));
+      } finally {
+        controller.close();
+      }
+    },
+  });
+
+  return new Response(stream, {
+    headers: {
+      'Content-Type': 'text/event-stream',
+      'Cache-Control': 'no-cache',
+      'Connection': 'keep-alive',
+    },
+  });
+});
+
 stravaRoutes.get('/api/activities', async (c) => {
   try {
     let row = getStravaToken();

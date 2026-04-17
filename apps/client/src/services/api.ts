@@ -61,3 +61,39 @@ export async function fetchActivities(range?: { from?: string; to?: string }): P
   const res = await apiFetch(`/api/activities${query}`);
   return res.json();
 }
+
+/** Stream activities from the server page-by-page via SSE. Returns a cleanup function. */
+export function fetchActivitiesStream(callbacks: {
+  onPage: (activities: StravaActivity[], loaded: number) => void;
+  onDone: (total: number) => void;
+  onError: (error: string) => void;
+}): () => void {
+  const es = new EventSource('/api/activities/stream');
+
+  es.onmessage = (event) => {
+    const data = JSON.parse(event.data as string) as {
+      page?: number;
+      activities?: StravaActivity[];
+      loaded?: number;
+      done?: boolean;
+      total?: number;
+      error?: string;
+    };
+    if (data.error) {
+      callbacks.onError(data.error);
+      es.close();
+    } else if (data.done) {
+      callbacks.onDone(data.total ?? 0);
+      es.close();
+    } else if (data.activities) {
+      callbacks.onPage(data.activities, data.loaded ?? 0);
+    }
+  };
+
+  es.onerror = () => {
+    callbacks.onError('Connection error');
+    es.close();
+  };
+
+  return () => es.close();
+}

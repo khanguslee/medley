@@ -187,4 +187,62 @@ describe('fetchAllActivities', () => {
       fetchAllActivities(mockFetch as unknown as typeof fetch, 'access-abc'),
     ).rejects.toBeInstanceOf(StravaApiError);
   });
+
+  it('calls onPage after each page with that page batch and page number', async () => {
+    const page1 = [makeActivity(1), makeActivity(2)];
+    const page2 = [makeActivity(3)];
+
+    const mockFetch = vi.fn()
+      .mockResolvedValueOnce({ ok: true, json: async () => page1 })
+      .mockResolvedValueOnce({ ok: true, json: async () => page2 });
+
+    const onPage = vi.fn();
+
+    await fetchAllActivities(mockFetch as unknown as typeof fetch, 'access-abc', {
+      perPage: 2,
+      onPage,
+    });
+
+    expect(onPage).toHaveBeenCalledTimes(2);
+    expect(onPage).toHaveBeenNthCalledWith(1, page1, 1);
+    expect(onPage).toHaveBeenNthCalledWith(2, page2, 2);
+  });
+
+  it('calls onProgress with cumulative loaded count after each page', async () => {
+    const page1 = [makeActivity(1), makeActivity(2)];
+    const page2 = [makeActivity(3)];
+
+    const mockFetch = vi.fn()
+      .mockResolvedValueOnce({ ok: true, json: async () => page1 })
+      .mockResolvedValueOnce({ ok: true, json: async () => page2 });
+
+    const onProgress = vi.fn();
+
+    await fetchAllActivities(mockFetch as unknown as typeof fetch, 'access-abc', {
+      perPage: 2,
+      onProgress,
+    });
+
+    expect(onProgress).toHaveBeenCalledTimes(2);
+    expect(onProgress).toHaveBeenNthCalledWith(1, 2, 1);
+    expect(onProgress).toHaveBeenNthCalledWith(2, 3, 2);
+  });
+
+  it('calls onPage and onProgress with empty batch on an empty first page', async () => {
+    const mockFetch = vi.fn().mockResolvedValueOnce({ ok: true, json: async () => [] });
+
+    const onPage = vi.fn();
+    const onProgress = vi.fn();
+
+    await fetchAllActivities(mockFetch as unknown as typeof fetch, 'access-abc', {
+      perPage: 100,
+      onPage,
+      onProgress,
+    });
+
+    expect(onPage).toHaveBeenCalledTimes(1);
+    expect(onPage).toHaveBeenCalledWith([], 1);
+    expect(onProgress).toHaveBeenCalledTimes(1);
+    expect(onProgress).toHaveBeenCalledWith(0, 1);
+  });
 });
