@@ -85,9 +85,15 @@ export default function HeatmapCalendar({ grid }: HeatmapCalendarProps) {
 
   return (
     <div className="heatmap-container">
-      {/* Month labels row */}
-      <div className="heatmap-month-row">
-        <div className="heatmap-day-labels-spacer" />
+      {/*
+        Single outer grid: 2 columns (day-labels col + data col).
+        Both the month-labels row and the heatmap-grid row live in column 2,
+        so they share the exact same computed width — no alignment drift possible.
+      */}
+      <div className="heatmap-outer">
+        {/* Row 1, col 1: spacer */}
+        <div />
+        {/* Row 1, col 2: month labels */}
         <div className="heatmap-month-labels">
           {Array.from({ length: 52 }).map((_, weekIndex) => (
             <div key={`month-${weekIndex}`} className="heatmap-month-label">
@@ -95,11 +101,8 @@ export default function HeatmapCalendar({ grid }: HeatmapCalendarProps) {
             </div>
           ))}
         </div>
-      </div>
 
-      {/* Main grid */}
-      <div className="heatmap-grid-wrapper">
-        {/* Day labels column */}
+        {/* Row 2, col 1: day labels (Mon/Wed/Fri) */}
         <div className="heatmap-day-labels">
           {[1, 3, 5].map((dayIndex) => (
             <div key={`day-${dayIndex}`} className="heatmap-day-label">
@@ -108,7 +111,7 @@ export default function HeatmapCalendar({ grid }: HeatmapCalendarProps) {
           ))}
         </div>
 
-        {/* Heatmap grid */}
+        {/* Row 2, col 2: heatmap grid */}
         <div className="heatmap-grid">
           {grid.map((day, index) => (
             <div

@@ -358,26 +358,28 @@
   -webkit-overflow-scrolling: touch;
 }
 
-.heatmap-month-row {
-  display: flex;
-  gap: 0.5rem;
-  margin-bottom: 0.5rem;
-  font-size: 0.75rem;
-  color: var(--text);
-  font-weight: 500;
-}
-
-.heatmap-day-labels-spacer {
-  width: 28px;
-  flex-shrink: 0;
+/*
+  Single outer grid: 2 columns (day-labels | data) × 2 rows (months | cells).
+  Because both the month-labels and heatmap-grid sit in column 2 of the same
+  CSS grid, they share an identical computed width — alignment is guaranteed.
+*/
+.heatmap-outer {
+  display: grid;
+  grid-template-columns: 28px 1fr;
+  grid-template-rows: auto auto;
+  column-gap: 0.5rem;
+  row-gap: 0.25rem;
+  min-width: 628px; /* 28px day-label col + 0.5rem gap + 600px data col */
 }
 
 .heatmap-month-labels {
   display: grid;
   grid-template-columns: repeat(52, 1fr);
   gap: 3px;
-  flex: 1;
-  min-width: 600px;
+  font-size: 0.75rem;
+  color: var(--text);
+  font-weight: 500;
+  margin-bottom: 0.25rem;
 }
 
 .heatmap-month-label {
@@ -388,17 +390,10 @@
   overflow: hidden;
 }
 
-.heatmap-grid-wrapper {
-  display: flex;
-  gap: 0.5rem;
-}
-
 .heatmap-day-labels {
   display: flex;
   flex-direction: column;
   gap: 3px;
-  width: 28px;
-  flex-shrink: 0;
 }
 
 .heatmap-day-label {
@@ -419,7 +414,6 @@
   gap: 3px;
   grid-auto-flow: column;
   aspect-ratio: 52 / 7;
-  min-width: 600px;
 }
 
 .heatmap-cell {
