@@ -65,6 +65,10 @@ export default function HeatmapCalendar({ grid }: HeatmapCalendarProps) {
   // grid.length is always a multiple of 7 (complete weeks)
   const numWeeks = grid.length / 7;
 
+  // Compute today's date key for highlighting
+  const today = new Date();
+  const todayKey = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, '0')}-${String(today.getDate()).padStart(2, '0')}`;
+
   // Compute p95 for color normalization
   const p95 = useMemo(() => computeP95(grid), [grid]);
 
@@ -124,6 +128,7 @@ export default function HeatmapCalendar({ grid }: HeatmapCalendarProps) {
               key={`${day.date}-${index}`}
               className="heatmap-cell"
               data-level={intensityLevels[index]}
+              data-today={day.date === todayKey ? 'true' : undefined}
               onMouseEnter={(e) => handleCellMouseEnter(e, day)}
               onMouseLeave={handleCellMouseLeave}
               title={day.activities.length > 0 ? day.activities.join(', ') : 'No activities'}
