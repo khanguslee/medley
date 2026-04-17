@@ -77,7 +77,21 @@ describe('Dashboard', () => {
     expect(screen.getByText('Connecting to Strava…')).toBeInTheDocument()
   })
 
-  it('shows inline progress message with partial data after first page', () => {
+  it('shows inline count when loading with no activities yet', () => {
+    vi.mocked(useActivity).mockReturnValue({
+      ...baseContext,
+      athlete: mockAthlete,
+      isAuthenticated: true,
+      loading: true,
+      loadedCount: 47,
+      activities: [],
+    })
+
+    renderDashboard()
+    expect(screen.getByText('Loaded 47 activities…')).toBeInTheDocument()
+  })
+
+  it('shows sync badge (not count) when loading with activities already visible', () => {
     vi.mocked(useActivity).mockReturnValue({
       ...baseContext,
       athlete: mockAthlete,
@@ -88,7 +102,8 @@ describe('Dashboard', () => {
     })
 
     renderDashboard()
-    expect(screen.getByText('Loaded 47 activities…')).toBeInTheDocument()
+    expect(screen.getByText('Syncing…')).toBeInTheDocument()
+    expect(screen.queryByText('Loaded 47 activities…')).not.toBeInTheDocument()
     expect(screen.getByTestId('bar-chart')).toBeInTheDocument()
   })
 

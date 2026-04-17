@@ -69,9 +69,14 @@ export default function Dashboard() {
 
   return (
     <div className="page dashboard">
-      <h2>Hours by sport</h2>
+      <div className="dashboard-heading">
+        <h2>Hours by sport</h2>
+        {loading && activities.length > 0 && (
+          <span className="sync-badge">Syncing…</span>
+        )}
+      </div>
 
-      {loading && loadedCount > 0 && (
+      {loading && loadedCount > 0 && activities.length === 0 && (
         <p className="loading">Loaded {loadedCount} activities…</p>
       )}
 

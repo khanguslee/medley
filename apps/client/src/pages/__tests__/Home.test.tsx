@@ -61,7 +61,21 @@ describe('Home', () => {
     expect(screen.getByText('Connecting to Strava…')).toBeInTheDocument()
   })
 
-  it('shows inline progress message and partial activity list after first page', () => {
+  it('shows inline count when loading with no activities yet', () => {
+    vi.mocked(useActivity).mockReturnValue({
+      ...baseContext,
+      athlete: mockAthlete,
+      isAuthenticated: true,
+      loading: true,
+      loadedCount: 47,
+      activities: [],
+    })
+
+    renderHome()
+    expect(screen.getByText('Loaded 47 activities…')).toBeInTheDocument()
+  })
+
+  it('shows sync badge (not count) when loading with activities already visible', () => {
     vi.mocked(useActivity).mockReturnValue({
       ...baseContext,
       athlete: mockAthlete,
@@ -72,7 +86,8 @@ describe('Home', () => {
     })
 
     renderHome()
-    expect(screen.getByText('Loaded 47 activities…')).toBeInTheDocument()
+    expect(screen.getByText('Syncing…')).toBeInTheDocument()
+    expect(screen.queryByText('Loaded 47 activities…')).not.toBeInTheDocument()
     expect(screen.getByText('Morning Run')).toBeInTheDocument()
   })
 

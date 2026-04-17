@@ -35,12 +35,17 @@ export default function Home() {
     <div className="page">
       <header className="header">
         <h1>Hi{athlete ? `, ${athlete.firstname}` : ''}!</h1>
-        <button onClick={disconnect} className="disconnect-btn">
-          Disconnect
-        </button>
+        <div className="header-actions">
+          {loading && activities.length > 0 && (
+            <span className="sync-badge">Syncing…</span>
+          )}
+          <button onClick={disconnect} className="disconnect-btn">
+            Disconnect
+          </button>
+        </div>
       </header>
 
-      {loading && loadedCount > 0 && (
+      {loading && loadedCount > 0 && activities.length === 0 && (
         <p className="loading">Loaded {loadedCount} activities…</p>
       )}
 
