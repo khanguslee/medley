@@ -129,6 +129,7 @@ export default function HeatmapCalendar({ grid }: HeatmapCalendarProps) {
               className="heatmap-cell"
               data-level={intensityLevels[index]}
               data-today={day.date === todayKey ? 'true' : undefined}
+              data-future={day.date > todayKey ? 'true' : undefined}
               onMouseEnter={(e) => handleCellMouseEnter(e, day)}
               onMouseLeave={handleCellMouseLeave}
               title={day.activities.length > 0 ? day.activities.join(', ') : 'No activities'}
