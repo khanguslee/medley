@@ -317,7 +317,7 @@
 }
 
 .overview {
-  max-width: 100%;
+  max-width: 950px;
 }
 
 .overview-heading {
@@ -377,7 +377,7 @@
   grid-template-rows: auto auto;
   column-gap: 0.5rem;
   row-gap: 0.25rem;
-  min-width: 628px; /* 28px day-label col + 0.5rem gap + 600px data col */
+  min-width: auto;
 }
 
 .heatmap-month-labels {
