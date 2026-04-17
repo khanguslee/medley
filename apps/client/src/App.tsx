@@ -4,6 +4,7 @@ import Nav from "./components/Nav";
 import Home from "./pages/Home";
 import Callback from "./pages/Callback";
 import Dashboard from "./pages/Dashboard";
+import Overview from "./pages/Overview";
 import "./App.css";
 
 function App() {
@@ -15,6 +16,7 @@ function App() {
           <Route path="/" element={<Home />} />
           <Route path="/auth/callback" element={<Callback />} />
           <Route path="/dashboard" element={<Dashboard />} />
+          <Route path="/overview" element={<Overview />} />
         </Routes>
       </ActivityProvider>
     </BrowserRouter>

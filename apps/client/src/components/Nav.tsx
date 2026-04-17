@@ -7,6 +7,9 @@ export default function Nav() {
 
   return (
     <nav className="nav">
+      <NavLink to="/overview" className={({ isActive }) => isActive ? 'nav-link active' : 'nav-link'}>
+        Overview
+      </NavLink>
       <NavLink to="/" end className={({ isActive }) => isActive ? 'nav-link active' : 'nav-link'}>
         Activities
       </NavLink>
