@@ -2,7 +2,7 @@ import { useState } from 'react'
 import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer } from 'recharts'
 import { useActivity } from '../context/ActivityContext'
 import { getStartOfPeriod, formatPeriodRange, toDateInputValue, type TimePeriod, type CustomRange } from '../utils/dates'
-import { aggregateHoursBySport } from '../utils/activities'
+import { aggregateBySport, SPORT_METRICS } from '../utils/activities'
 
 const PERIODS: { label: string; value: TimePeriod }[] = [
   { label: 'This week', value: 'week' },
@@ -27,6 +27,7 @@ export default function Dashboard() {
   const [period, setPeriod] = useState<TimePeriod>('month')
   const [customStart, setCustomStart] = useState<string>(defaultCustomStart)
   const [customEnd, setCustomEnd] = useState<string>(defaultCustomEnd)
+  const [metricId, setMetricId] = useState<string>('moving_time')
 
   if (loading && loadedCount === 0) {
     return (
@@ -64,7 +65,8 @@ export default function Dashboard() {
     after = getStartOfPeriod(period)
   }
 
-  const chartData = aggregateHoursBySport(activities, after, before)
+  const metric = SPORT_METRICS[metricId]
+  const chartData = aggregateBySport(activities, metric, after, before)
   const rangeLabel = formatPeriodRange(period, new Date(), customRange)
 
   return (
@@ -88,6 +90,18 @@ export default function Dashboard() {
             onClick={() => setPeriod(value)}
           >
             {label}
+          </button>
+        ))}
+      </div>
+
+      <div className="time-filters">
+        {Object.values(SPORT_METRICS).map(m => (
+          <button
+            key={m.id}
+            className={metricId === m.id ? 'active' : ''}
+            onClick={() => setMetricId(m.id)}
+          >
+            {m.label}
           </button>
         ))}
       </div>
@@ -125,18 +139,18 @@ export default function Dashboard() {
             <ResponsiveContainer width="100%" height={300}>
               <BarChart data={chartData} margin={{ top: 16, right: 16, left: 0, bottom: 8 }}>
                 <XAxis dataKey="sport" tick={{ fontSize: 13 }} />
-                <YAxis unit="h" tick={{ fontSize: 13 }} />
-                <Tooltip formatter={(value) => [`${value}h`, 'Hours']} />
-                <Bar dataKey="hours" fill="#aa3bff" radius={[4, 4, 0, 0]} />
+                <YAxis unit={metric.unit} tick={{ fontSize: 13 }} />
+                <Tooltip formatter={(value) => [`${value}${metric.unit}`, metric.label]} />
+                <Bar dataKey="value" fill="#aa3bff" radius={[4, 4, 0, 0]} />
               </BarChart>
             </ResponsiveContainer>
           </div>
 
           <ul className="summary-list">
-            {chartData.map(({ sport, hours }) => (
+            {chartData.map(({ sport, value }) => (
               <li key={sport} className="summary-item">
                 <span className="summary-sport">{sport}</span>
-                <span className="summary-hours">{hours}h</span>
+                <span className="summary-hours">{value}{metric.unit}</span>
               </li>
             ))}
           </ul>

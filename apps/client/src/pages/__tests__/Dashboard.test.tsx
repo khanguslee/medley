@@ -29,11 +29,11 @@ const mockAthlete: StravaAthlete = {
 const mockActivities: StravaActivity[] = [
   {
     id: 1, name: 'Run 1', type: 'Run', sport_type: 'Run',
-    distance: 5000, moving_time: 3600, start_date: new Date().toISOString(),
+    distance: 5000, moving_time: 3600, elapsed_time: 4500, start_date: new Date().toISOString(),
   },
   {
     id: 2, name: 'Ride 1', type: 'Ride', sport_type: 'Ride',
-    distance: 20000, moving_time: 7200, start_date: new Date().toISOString(),
+    distance: 20000, moving_time: 7200, elapsed_time: 9000, start_date: new Date().toISOString(),
   },
 ]
 
@@ -255,6 +255,53 @@ describe('Dashboard', () => {
 
     fireEvent.click(screen.getByRole('button', { name: 'This month' }))
     expect(screen.queryAllByDisplayValue(/\d{4}-\d{2}-\d{2}/)).toHaveLength(0)
+  })
+
+  it('renders metric filter buttons', () => {
+    vi.mocked(useActivity).mockReturnValue({
+      ...baseContext,
+      athlete: mockAthlete,
+      isAuthenticated: true,
+    })
+
+    renderDashboard()
+    expect(screen.getByRole('button', { name: 'Moving time' })).toBeInTheDocument()
+    expect(screen.getByRole('button', { name: 'Elapsed time' })).toBeInTheDocument()
+  })
+
+  it('defaults to "Moving time" as active metric', () => {
+    vi.mocked(useActivity).mockReturnValue({
+      ...baseContext,
+      athlete: mockAthlete,
+      isAuthenticated: true,
+    })
+
+    renderDashboard()
+    expect(screen.getByRole('button', { name: 'Moving time' })).toHaveClass('active')
+    expect(screen.getByRole('button', { name: 'Elapsed time' })).not.toHaveClass('active')
+  })
+
+  it('switches to elapsed totals when "Elapsed time" toggle is clicked', () => {
+    vi.mocked(useActivity).mockReturnValue({
+      ...baseContext,
+      athlete: mockAthlete,
+      isAuthenticated: true,
+      activities: mockActivities,
+    })
+
+    renderDashboard()
+    // Moving time: Run = 3600s → 1h, Ride = 7200s → 2h
+    expect(screen.getByText('1h')).toBeInTheDocument()
+    expect(screen.getByText('2h')).toBeInTheDocument()
+
+    fireEvent.click(screen.getByRole('button', { name: 'Elapsed time' }))
+
+    // Elapsed time: Run = 4500s → 1.3h, Ride = 9000s → 2.5h
+    expect(screen.getByText('1.3h')).toBeInTheDocument()
+    expect(screen.getByText('2.5h')).toBeInTheDocument()
+    // Moving time values should no longer appear
+    expect(screen.queryByText('1h')).not.toBeInTheDocument()
+    expect(screen.queryByText('2h')).not.toBeInTheDocument()
   })
 
   it('shows formatted custom range label when custom dates are set', () => {
