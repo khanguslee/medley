@@ -317,7 +317,7 @@
 }
 
 .overview {
-  max-width: 1200px;
+  max-width: 100%;
 }
 
 .overview-heading {
@@ -362,6 +362,8 @@
   overflow-x: auto;
   overflow-y: hidden;
   -webkit-overflow-scrolling: touch;
+  width: 100%;
+  box-sizing: border-box;
 }
 
 /*
